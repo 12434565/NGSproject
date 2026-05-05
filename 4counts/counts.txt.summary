@@ -1,0 +1,15 @@
+Status	/wellstein/user_homes/il1380/project/3align/lymphnode_4a.s.bam	/wellstein/user_homes/il1380/project/3align/lymphnode_4b.s.bam	/wellstein/user_homes/il1380/project/3align/lymphnode_5a.s.bam	/wellstein/user_homes/il1380/project/3align/lymphnode_5b.s.bam	/wellstein/user_homes/il1380/project/3align/lymphnode_5c.s.bam	/wellstein/user_homes/il1380/project/3align/spleen_3a.s.bam	/wellstein/user_homes/il1380/project/3align/spleen_3b.s.bam	/wellstein/user_homes/il1380/project/3align/spleen_3c.s.bam	/wellstein/user_homes/il1380/project/3align/spleen_3d.s.bam
+Assigned	13000439	12916505	13918017	12560657	12861817	13034005	13145178	12824145	13223076
+Unassigned_Unmapped	915169	1074977	1720578	2016094	1445710	1240087	1123983	1194102	1029299
+Unassigned_Read_Type	0	0	0	0	0	0	0	0	0
+Unassigned_Singleton	0	0	0	0	0	0	0	0	0
+Unassigned_MappingQuality	0	0	0	0	0	0	0	0	0
+Unassigned_Chimera	0	0	0	0	0	0	0	0	0
+Unassigned_FragmentLength	0	0	0	0	0	0	0	0	0
+Unassigned_Duplicate	0	0	0	0	0	0	0	0	0
+Unassigned_MultiMapping	8386763	9184477	6560804	10923557	7502111	6712023	8542397	7344981	6825395
+Unassigned_Secondary	0	0	0	0	0	0	0	0	0
+Unassigned_NonSplit	0	0	0	0	0	0	0	0	0
+Unassigned_NoFeatures	2784952	2469218	1649027	1218437	2784211	2699471	2030363	2670542	2669363
+Unassigned_Overlapping_Length	0	0	0	0	0	0	0	0	0
+Unassigned_Ambiguity	341461	350522	327728	446941	339082	354296	377514	359519	357848

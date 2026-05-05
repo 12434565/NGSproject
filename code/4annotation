@@ -1,0 +1,305 @@
+library(edgeR)
+setwd("/Users/liulin/Desktop/NGS/HW13_project/deseq")
+# 转成 logCPM（推荐）
+counts <- read.table("counts.txt",
+                     header=TRUE,
+                     row.names=1,
+                     comment.char="#")
+# 去掉前5列（featureCounts格式）
+counts <- counts[,6:ncol(counts)]
+
+# 确保全部是 numeric
+counts <- as.matrix(counts)
+colnames(counts) <- sub(".*3align\\.", "", colnames(counts))
+colnames(counts) <- sub("\\.s\\.bam$", "", colnames(counts))
+# 再做 cpm
+cpm_mat <- cpm(counts, log=TRUE)
+
+# 保存
+write.table(
+  cpm_mat,
+  file = "expression_for_cibersort2.txt",
+  sep = "\t",
+  quote = FALSE
+)
+############################################
+# 🔥 修复CIBERSORT输入（最终版）
+############################################
+
+# 1️⃣ 去掉 NA 行（你已经有坏行了）
+cpm_mat <- cpm_mat[complete.cases(cpm_mat), ]
+nrow(cpm_mat)
+# 2️⃣ 🚨 去重复 gene（关键）
+cpm_mat <- cpm_mat[!duplicated(rownames(cpm_mat)), ]
+
+# 3️⃣ 加上 Gene 列（最关键！！）
+cpm_mat <- data.frame(Gene = rownames(cpm_mat), cpm_mat)
+cpm_mat <- cpm_mat[, c("Gene", setdiff(colnames(cpm_mat), "Gene"))]
+rownames(cpm_mat) <- NULL
+# 4️⃣ 检查
+head(cpm_mat)
+dim(cpm_mat)
+
+# 5️⃣ 保存
+write.table(
+  cpm_mat,
+  "expression_for_cibersort_FIXED.txt",
+  sep="\t",
+  row.names=FALSE,
+  quote=FALSE
+)
+
+df <- read.csv("CIBERSORTx_Job4_Results.csv", row.names = 1)
+group <- ifelse(grepl("lymphnode", rownames(df)), "lymphnode", "spleen")
+pvals <- c()
+
+for (cell in colnames(df)) {
+  x <- df[group == "lymphnode", cell]
+  y <- df[group == "spleen", cell]
+  
+  test <- wilcox.test(x, y)  # 推荐
+  pvals[cell] <- test$p.value
+}
+
+# 多重校正
+padj <- p.adjust(pvals, method = "BH")
+
+res <- data.frame(
+  CellType = names(pvals),
+  pvalue = pvals,
+  padj = padj
+)
+
+# 排序
+res <- res[order(res$padj), ]
+head(res)
+
+library(ggplot2)
+library(reshape2)
+
+# 加 group
+df$group <- ifelse(grepl("lymphnode", rownames(df)), "lymphnode", "spleen")
+df <- df[, colSums(df != 0) > 0]
+# 转长格式
+df <- df[, !colnames(df) %in% c("P.value", "Correlation", "RMSE")]
+
+df_long <- melt(df, id.vars = "group")
+
+# 加 sample 名
+df_long$sample <- rep(rownames(df), times = ncol(df)-1)
+
+# 画图
+cb_palette <- c(
+  # "#000000", # black
+  "#E69F00", # orange
+  "#56B4E9", # sky blue
+  "#009E73", # bluish green
+  "#F0E442", # yellow
+  "#0072B2", # blue
+  "#D55E00", # vermillion
+  "#CC79A7"  # reddish purple
+)
+cb_palette_extended <- colorRampPalette(cb_palette)(17)
+
+ggplot(df_long, aes(x = sample, y = value, fill = variable)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = cb_palette_extended) +
+  theme_minimal() +
+  labs(
+    x = "Sample",
+    y = "Cell proportion",
+    fill = "Cell Type",
+    title = "Immune Cell Composition (CIBERSORTx)"
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(
+      hjust = 0.5,        # ⭐ 标题居中
+      size = 14,          # 字号
+      face = "bold"       # 加粗（更像论文）
+    )
+  )
+# ggsave("cell_composition.png", plot = p, width = 10, height = 6, dpi = 300)
+
+
+library(dplyr)
+
+summary_df <- df_long %>%
+  group_by(group, variable) %>%
+  summarise(mean = mean(value), .groups = "drop")
+pvals <- df_long %>%
+  group_by(variable) %>%
+  summarise(
+    p = wilcox.test(value ~ group)$p.value,
+    .groups = "drop"
+  )
+# ⭐ 转星号函数
+pvals$stars <- cut(
+  pvals$p,
+  breaks = c(-Inf, 0.001, 0.01, 0.05, Inf),
+  labels = c("***", "**", "*", "")
+)
+############################################
+# 3️⃣ 计算标注位置（放在柱子上方）
+############################################
+pos <- summary_df %>%
+  group_by(variable) %>%
+  summarise(y = max(mean) * 1.1)
+pvals <- merge(pvals, pos, by = "variable")
+############################################
+# 4️⃣ 作图 + 加星号
+############################################
+ggplot(summary_df, aes(x = variable, y = mean, fill = group)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.8), width = 0.8) +
+  
+  # ⭐ 星号
+  geom_text(
+    data = pvals,
+    aes(x = variable, y = y, label = stars),
+    inherit.aes = FALSE,
+    size = 5
+  ) +
+  
+  theme_minimal() +
+  labs(
+    x = "Cell Type",
+    y = "Mean proportion",
+    fill = "Group",
+    title = "Cell Type Comparison with Significance"
+  ) +
+  scale_fill_manual(values = c(
+    "lymphnode" = "#4DBBD5",
+    "spleen" = "#E64B35"
+  ))+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(color = "black"),
+        plot.title = element_text(hjust = 0.5, size = 16, face = "bold"))
+# 保存
+ggsave("cell_type_with_stars.png", p, width = 15, height = 6, dpi = 600)
+
+
+library(ggplot2)
+library(ggpubr)
+
+# ggplot(df_long, aes(x = variable, y = value, fill = group)) +
+#   geom_boxplot(position = position_dodge(0.8), outlier.shape = NA) +
+#   
+#   # 每个点（很关键🔥）
+#   geom_jitter(
+#     position = position_jitterdodge(jitter.width = 0.2, dodge.width = 0.8),
+#     alpha = 0.6,
+#     size = 1.5
+#   ) +
+#   
+#   # ⭐ 自动 bracket + 星号
+#   stat_compare_means(
+#     aes(group = group),
+#     method = "wilcox.test",
+#     label = "p.signif"
+#   ) +
+#   
+#   scale_fill_manual(values = c(
+#     "lymphnode" = "#4DBBD5",
+#     "spleen" = "#E64B35"
+#   )) +
+#   
+#   theme_minimal() +
+#   theme(
+#     axis.text.x = element_text(angle = 45, hjust = 1),
+#     plot.title = element_text(hjust = 0.5, size = 16, face = "bold")
+#   ) +
+#   labs(
+#     title = "Cell Type Comparison",
+#     x = "Cell Type",
+#     y = "Proportion"
+#   )
+# 
+# ggsave("boxplot_celltype.png", p, width = 14, height = 6, dpi = 600)
+
+library(ggplot2)
+library(ggpubr)
+library(patchwork)
+
+cell_types <- unique(df_long$variable)
+
+plot_list <- lapply(cell_types, function(ct) {
+  
+  df_sub <- df_long[df_long$variable == ct, ]
+  
+  ggplot(df_sub, aes(x = group, y = value, fill = group)) +
+    geom_boxplot(outlier.shape = NA, width = 0.5) +
+    
+    geom_jitter(width = 0.1, alpha = 0.6, size = 1.2) +
+    
+    stat_compare_means(
+      method = "wilcox.test",
+      label = "p.signif",
+      hide.ns = TRUE
+    ) +
+    
+    scale_fill_manual(values = c(
+      "lymphnode" = "#4DBBD5",
+      "spleen" = "#E64B35"
+    )) +
+    
+    theme_minimal() +
+    theme(
+      aspect.ratio = 1,  # ⭐ 变高
+      panel.border = element_rect(color = "black", fill = NA),
+      plot.title = element_text(hjust = 0.5),
+      legend.position = "none"
+    ) +
+    
+    labs(
+      title = ct,
+      x = "",
+      y = "Proportion"
+    )
+})
+
+# 🔥 拼图
+combined_plot <- wrap_plots(plot_list, ncol = 6)
+
+combined_plot
+
+
+
+padj_clean <- padj[!names(padj) %in% c("P.value", "Correlation", "RMSE")]
+
+# 去掉 NA（比如 Plasma.cells）
+padj_clean <- padj_clean[!is.na(padj_clean)]
+df_padj <- data.frame(
+  CellType = names(padj_clean),
+  padj = padj_clean
+)
+
+# 排序（更好看）
+df_padj <- df_padj[order(df_padj$padj), ]
+df_padj <- merge(
+  df_padj,
+  pvals,
+  by.x = "CellType",
+  by.y = "variable",
+  all.x = TRUE
+)
+colnames(df_padj)[colnames(df_padj) == "p"] <- "pvalue"
+colnames(df_padj)[colnames(df_padj) == "y"] <- "FDR"
+
+ggplot(df_padj, aes(x = reorder(CellType, padj), y = -log10(padj))) +
+  geom_bar(stat = "identity", fill = "#4DBBD5") +
+  
+  coord_flip() +
+  
+  theme_minimal() +
+  theme(
+    panel.border = element_rect(color = "black", fill = NA),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  ) +
+  
+  labs(
+    title = "Adjusted p-values of Cell Type Differences",
+    x = "Cell Type",
+    y = "padj"
+  )

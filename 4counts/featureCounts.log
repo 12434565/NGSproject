@@ -1,0 +1,107 @@
+
+        ==========     _____ _    _ ____  _____  ______          _____  
+        =====         / ____| |  | |  _ \|  __ \|  ____|   /\   |  __ \ 
+          =====      | (___ | |  | | |_) | |__) | |__     /  \  | |  | |
+            ====      \___ \| |  | |  _ <|  _  /|  __|   / /\ \ | |  | |
+              ====    ____) | |__| | |_) | | \ \| |____ / ____ \| |__| |
+        ==========   |_____/ \____/|____/|_|  \_\______/_/    \_\_____/
+	  v2.0.6
+
+//========================== featureCounts setting ===========================\\
+||                                                                            ||
+||             Input files : 9 BAM files                                      ||
+||                                                                            ||
+||                           lymphnode_4a.s.bam                               ||
+||                           lymphnode_4b.s.bam                               ||
+||                           lymphnode_5a.s.bam                               ||
+||                           lymphnode_5b.s.bam                               ||
+||                           lymphnode_5c.s.bam                               ||
+||                           spleen_3a.s.bam                                  ||
+||                           spleen_3b.s.bam                                  ||
+||                           spleen_3c.s.bam                                  ||
+||                           spleen_3d.s.bam                                  ||
+||                                                                            ||
+||             Output file : counts.txt                                       ||
+||                 Summary : counts.txt.summary                               ||
+||              Paired-end : no                                               ||
+||        Count read pairs : no                                               ||
+||              Annotation : GCF_000001405.26_GRCh38_genomic.gtf (GTF)        ||
+||      Dir for temp files : /wellstein/user_homes/il1380/project/4counts     ||
+||                                                                            ||
+||                 Threads : 8                                                ||
+||                   Level : meta-feature level                               ||
+||      Multimapping reads : not counted                                      ||
+|| Multi-overlapping reads : not counted                                      ||
+||   Min overlapping bases : 1                                                ||
+||                                                                            ||
+\\============================================================================//
+
+//================================= Running ==================================\\
+||                                                                            ||
+|| Load annotation file GCF_000001405.26_GRCh38_genomic.gtf ...               ||
+||    Features : 1033116                                                      ||
+||    Meta-features : 33968                                                   ||
+||    Chromosomes/contigs : 282                                               ||
+||                                                                            ||
+|| Process BAM file lymphnode_4a.s.bam...                                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 25428784                                             ||
+||    Successfully assigned alignments : 13000439 (51.1%)                     ||
+||    Running time : 0.08 minutes                                             ||
+||                                                                            ||
+|| Process BAM file lymphnode_4b.s.bam...                                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 25995699                                             ||
+||    Successfully assigned alignments : 12916505 (49.7%)                     ||
+||    Running time : 0.08 minutes                                             ||
+||                                                                            ||
+|| Process BAM file lymphnode_5a.s.bam...                                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 24176154                                             ||
+||    Successfully assigned alignments : 13918017 (57.6%)                     ||
+||    Running time : 0.07 minutes                                             ||
+||                                                                            ||
+|| Process BAM file lymphnode_5b.s.bam...                                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 27165686                                             ||
+||    Successfully assigned alignments : 12560657 (46.2%)                     ||
+||    Running time : 0.08 minutes                                             ||
+||                                                                            ||
+|| Process BAM file lymphnode_5c.s.bam...                                     ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 24932931                                             ||
+||    Successfully assigned alignments : 12861817 (51.6%)                     ||
+||    Running time : 0.08 minutes                                             ||
+||                                                                            ||
+|| Process BAM file spleen_3a.s.bam...                                        ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 24039882                                             ||
+||    Successfully assigned alignments : 13034005 (54.2%)                     ||
+||    Running time : 0.08 minutes                                             ||
+||                                                                            ||
+|| Process BAM file spleen_3b.s.bam...                                        ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 25219435                                             ||
+||    Successfully assigned alignments : 13145178 (52.1%)                     ||
+||    Running time : 0.08 minutes                                             ||
+||                                                                            ||
+|| Process BAM file spleen_3c.s.bam...                                        ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 24393289                                             ||
+||    Successfully assigned alignments : 12824145 (52.6%)                     ||
+||    Running time : 0.08 minutes                                             ||
+||                                                                            ||
+|| Process BAM file spleen_3d.s.bam...                                        ||
+||    Single-end reads are included.                                          ||
+||    Total alignments : 24104981                                             ||
+||    Successfully assigned alignments : 13223076 (54.9%)                     ||
+||    Running time : 0.08 minutes                                             ||
+||                                                                            ||
+|| Write the final count table.                                               ||
+|| Write the read assignment summary.                                         ||
+||                                                                            ||
+|| Summary of counting results can be found in file "/wellstein/user_homes/i  ||
+|| l1380/project/4counts/counts.txt.summary"                                  ||
+||                                                                            ||
+\\============================================================================//
+
